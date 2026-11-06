@@ -1,0 +1,12 @@
+# Dependencias e logs
+*.log
+.DS_Store
+Thumbs.db
+
+# Dados locais e temporarios (mantem a pasta data mas ignora arquivos gerados)
+selecao/api/data/*
+!selecao/api/data/.gitignore
+!selecao/api/data/.htaccess
+
+# Caso queira ignorar o .env no git (opcional, o .env.example serve de modelo)
+# .env
