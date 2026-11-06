@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Aventador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #07080c;
+      --card: rgba(22, 24, 32, .92);
+      --line: rgba(255,255,255,.08);
+      --gold: #e3b341;
+      --gold-2: #f3d48a;
+      --green: #3dd68c;
+      --amber: #f5a524;
+      --text: #f7f3ea;
+      --muted: #9b958c;
+      --shadow: 0 30px 80px rgba(0,0,0,.45);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: Manrope, sans-serif; }
+    body { background:
+      radial-gradient(1100px 520px at -10% -20%, rgba(227,179,65,.18), transparent 55%),
+      radial-gradient(900px 420px at 110% 0%, rgba(61,214,140,.1), transparent 50%),
+      var(--bg);
+    }
+    button, input { font-family: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+
+    .login { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .login-card {
+      width: min(440px, 100%);
+      background: linear-gradient(180deg, #1b1d26, #101218);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 36px 32px 32px;
+      box-shadow: var(--shadow);
+    }
+    .eyebrow { color: var(--gold); letter-spacing: .22em; text-transform: uppercase; font-size: 11px; font-weight: 700; }
+    .login-card h1, .brand h1 { font-family: Fraunces, serif; }
+    .login-card h1 { font-size: 42px; margin: 10px 0 8px; }
+    .sub { color: var(--muted); line-height: 1.5; margin-bottom: 28px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+    input[type="text"], input[type="password"], input[type="search"] {
+      width: 100%; background: #0d0f14; border: 1px solid var(--line); color: var(--text);
+      border-radius: 14px; padding: 14px 16px; outline: none;
+    }
+    input:focus { border-color: rgba(227,179,65,.55); }
+    .field { margin-bottom: 16px; }
+    .btn { border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 700; }
+    .btn-gold { width: 100%; background: linear-gradient(180deg, #f0c45a, #d7a227); color: #1a1406; margin-top: 8px; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+    .error { color: #ffb4b4; background: rgba(240,113,113,.1); border: 1px solid rgba(240,113,113,.25); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; font-size: 13px; }
+
+    .top {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 18px 28px; flex-wrap: wrap;
+      background: rgba(7,8,12,.78); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand h1 { font-size: 28px; }
+    .wrap { padding: 20px 28px 56px; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .pill, .badge {
+      border: 1px solid var(--line); background: #12141b; color: var(--muted);
+      border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600;
+    }
+    .pill.active { background: rgba(227,179,65,.16); color: var(--gold); border-color: rgba(227,179,65,.35); }
+    .badge.ok { color: var(--green); background: rgba(61,214,140,.12); border-color: rgba(61,214,140,.22); }
+    .badge.warn { color: var(--amber); background: rgba(245,165,36,.1); border-color: rgba(245,165,36,.22); }
+
+    .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 18px; }
+    .kpi {
+      background: linear-gradient(180deg, #1a1d26, #13151c);
+      border: 1px solid var(--line); border-radius: 22px; padding: 18px;
+    }
+    .kpi span { color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+    .kpi strong { display: block; font-family: Fraunces, serif; font-size: 30px; margin-top: 8px; }
+    .kpi em { display: block; color: var(--muted); font-style: normal; font-size: 12px; margin-top: 6px; }
+    .kpi.paid strong { color: var(--green); }
+
+    .grid-2 { display: grid; grid-template-columns: 1.4fr .8fr; gap: 14px; margin-bottom: 14px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 20px; }
+    .card h2 { font-size: 16px; margin-bottom: 4px; }
+    .card p.hint { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    canvas { max-height: 280px; }
+    .list { display: flex; flex-direction: column; }
+    .stat-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .stat-row:last-child { border-bottom: 0; }
+    .stat-row b { font-size: 14px; word-break: break-word; }
+    .stat-row small { color: var(--muted); display: block; margin-top: 3px; }
+    .money { color: var(--gold); font-weight: 700; white-space: nowrap; }
+
+    .toolbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin: 0 0 16px; flex-wrap: wrap; }
+    .sale {
+      background: #14161e; border: 1px solid var(--line); border-radius: 22px;
+      padding: 20px; margin-bottom: 12px; border-left: 4px solid var(--amber);
+    }
+    .sale.is-paid { border-left-color: var(--green); background: linear-gradient(90deg, rgba(61,214,140,.08), #14161e 28%); }
+    .sale-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+    .name { font-family: Fraunces, serif; font-size: 24px; line-height: 1.15; }
+    .meta { color: var(--muted); margin-top: 6px; font-size: 14px; }
+    .status { border-radius: 999px; padding: 7px 11px; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .status.paid { background: rgba(61,214,140,.14); color: var(--green); }
+    .status.wait { background: rgba(245,165,36,.12); color: var(--amber); }
+    .attr { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+    .attr-box { background: #0f1117; border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+    .attr-box span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; margin-bottom: 6px; }
+    .attr-box strong { font-size: 14px; word-break: break-word; }
+    .attr-box small { display: block; color: var(--muted); margin-top: 4px; }
+    .sale-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-pay { background: var(--gold); color: #1a1406; border: 0; border-radius: 12px; padding: 11px 15px; font-weight: 800; }
+    .btn-pay:disabled { opacity: .55; cursor: wait; }
+    .empty { color: var(--muted); padding: 28px 8px; text-align: center; }
+    .toast {
+      position: fixed; right: 24px; bottom: 24px; z-index: 40;
+      background: #151820; border: 1px solid rgba(61,214,140,.3); color: var(--green);
+      border-radius: 16px; padding: 14px 18px; font-weight: 700; box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 1200px) { .kpis, .grid-2, .grid-3, .attr { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 760px) {
+      .wrap, .top { padding-left: 16px; padding-right: 16px; }
+      .kpis, .grid-2, .grid-3, .attr { grid-template-columns: 1fr; }
+      .name { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <section id="login-view" class="login">
+    <form class="login-card" id="login-form">
+      <div class="eyebrow">Acesso restrito</div>
+      <h1>Painel Aventador</h1>
+      <p class="sub">Vendas, faturamento e origem de cada conversão — palavra-chave, campanha e criativo.</p>
+      <div id="login-error" class="error hidden"></div>
+      <div class="field">
+        <label for="user">Login</label>
+        <input id="user" name="user" type="text" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="pass">Senha</label>
+        <input id="pass" name="pass" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-gold" type="submit">Entrar no painel</button>
+    </form>
+  </section>
+
+  <section id="app-view" class="app hidden">
+    <header class="top">
+      <div class="brand">
+        <div class="eyebrow">Operação</div>
+        <h1>Painel Aventador</h1>
+      </div>
+      <div class="row">
+        <span id="driver-badge" class="badge warn">Armazenamento local</span>
+        <div class="row" id="range-pills">
+          <button class="pill" data-range="today">Hoje</button>
+          <button class="pill" data-range="7d">7 dias</button>
+          <button class="pill active" data-range="30d">30 dias</button>
+          <button class="pill" data-range="all">Tudo</button>
+        </div>
+        <button class="btn btn-ghost" id="logout-btn" type="button">Sair</button>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="kpis" id="kpis"></section>
+      <section class="grid-2">
+        <article class="card">
+          <h2>Vendas por dia</h2>
+          <p class="hint">Pedidos gerados e faturamento confirmado no período.</p>
+          <canvas id="day-chart"></canvas>
+        </article>
+        <article class="card">
+          <h2>Origem do tráfego</h2>
+          <p class="hint">Quem está trazendo pedido e quem está fechando venda.</p>
+          <div class="list" id="by-source"></div>
+        </article>
+      </section>
+      <section class="grid-3">
+        <article class="card">
+          <h2>Por palavra-chave</h2>
+          <p class="hint">O termo que o anúncio usou na conversão.</p>
+          <div class="list" id="by-keyword"></div>
+        </article>
+        <article class="card">
+          <h2>Por campanha</h2>
+          <p class="hint">ID da campanha Google Ads e o nome, quando existir.</p>
+          <div class="list" id="by-campaign"></div>
+        </article>
+        <article class="card">
+          <h2>Por dispositivo</h2>
+          <p class="hint">Mobile, computador e tablet das UTMs.</p>
+          <div class="list" id="by-device"></div>
+        </article>
+      </section>
+
+      <section class="card">
+        <div class="toolbar">
+          <div>
+            <h2>Pedidos e origem de cada venda</h2>
+            <p class="hint">Marque como pago para liberar o funil sem PIX. O status fica travado no painel.</p>
+          </div>
+          <div class="row">
+            <div class="row" id="status-pills">
+              <button class="pill active" data-status="all">Todos</button>
+              <button class="pill" data-status="waiting">Aguardando</button>
+              <button class="pill" data-status="paid">Pagos</button>
+            </div>
+            <input id="search" type="search" placeholder="Buscar nome, CPF, palavra-chave, campanha...">
+          </div>
+        </div>
+        <div id="sales"></div>
+      </section>
+    </main>
+  </section>
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    const API = '/selecao/api/admin-api.php';
+    const state = { range: '30d', status: 'all', data: null, chart: null };
+
+    const money = (cents) => (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
+    const pretty = (value, empty = 'Não informado') => {
+      const text = String(value ?? '').replace(/[\u0000-\u001f]/g, '').replace(/^•\s*/, '').trim();
+      return text && text !== '(sem dado)' ? text : empty;
+    };
+    const isPaid = (order) => order && (order.status === 'paid' || order.marked_paid_by_admin === true || order.marked_paid_by_admin === 'true');
+    const deviceLabel = (value) => ({ m: 'Mobile', c: 'Computador', t: 'Tablet' }[String(value || '').toLowerCase()] || pretty(value));
+    const matchLabel = (value) => ({ e: 'Exata', p: 'Frase', b: 'Ampla' }[String(value || '').toLowerCase()] || pretty(value, '—'));
+    const networkLabel = (value) => ({ g: 'Pesquisa', s: 'Parceiros de pesquisa', d: 'Display', y: 'YouTube' }[String(value || '').toLowerCase()] || pretty(value, '—'));
+    const keywordOf = (order) => pretty(order.utm_keyword || order.utm_term, 'sem palavra-chave');
+    const when = (iso) => {
+      if (!iso) return '—';
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return iso;
+      return date.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    };
+    function toast(message) {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.classList.remove('hidden');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.add('hidden'), 2800);
+    }
+
+    async function api(action, payload, method) {
+      const postActions = { login: 1, logout: 1, mark_paid: 1 };
+      const verb = method || (postActions[action] ? 'POST' : 'GET');
+      const url = verb === 'GET'
+        ? `${API}?action=${encodeURIComponent(action)}${payload && payload.range ? '&range=' + encodeURIComponent(payload.range) : ''}`
+        : API;
+      const options = { method: verb, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } };
+      if (verb !== 'GET') options.body = JSON.stringify({ action, ...(payload || {}) });
+      const res = await fetch(url, options);
+      const data = await res.json().catch(() => ({ success: false, error: 'Resposta invalida' }));
+      if (!res.ok || data.success === false) {
+        const err = new Error(data.error || 'Falha na API');
+        err.status = res.status;
+        throw err;
+      }
+      return data;
+    }
+
+    function showApp(show) {
+      document.getElementById('login-view').classList.toggle('hidden', show);
+      document.getElementById('app-view').classList.toggle('hidden', !show);
+    }
+    function setDriver(data) {
+      const badge = document.getElementById('driver-badge');
+      if (data.supabase_ready) {
+        badge.textContent = 'Supabase conectado';
+        badge.className = 'badge ok';
+      } else {
+        badge.textContent = 'Local — aguardando chaves do Supabase';
+        badge.className = 'badge warn';
+      }
+    }
+    function renderKpis(kpis) {
+      const items = [
+        ['Pedidos', kpis.pedidos, 'cadastros no período', ''],
+        ['Vendas pagas', kpis.pagos, `${kpis.aguardando} aguardando`, 'paid'],
+        ['Faturamento', money(kpis.faturamento_cents), 'somente pagos', 'paid'],
+        ['Conversão checkout', `${kpis.conversao_checkout}%`, 'pagos / pedidos', ''],
+        ['Conversão do funil', `${kpis.conversao_funil}%`, `${kpis.visitas} visitas`, ''],
+        ['Ticket médio', money(kpis.ticket_cents), 'por venda paga', '']
+      ];
+      document.getElementById('kpis').innerHTML = items.map(([label, value, hint, klass]) => `
+        <article class="kpi ${klass}"><span>${label}</span><strong>${value}</strong><em>${hint}</em></article>
+      `).join('');
+    }
+    function renderRows(id, rows, labelFn) {
+      const root = document.getElementById(id);
+      if (!rows.length) {
+        root.innerHTML = '<div class="empty">Sem dados neste período.</div>';
+        return;
+      }
+      root.innerHTML = rows.slice(0, 8).map((row) => `
+        <div class="stat-row">
+          <div>
+            <b>${esc(labelFn(row))}</b>
+            <small>${row.pagos} pagos · ${row.pedidos} pedidos</small>
+          </div>
+          <div class="money">${money(row.faturamento_cents)}</div>
+        </div>
+      `).join('');
+    }
+    function renderChart(days) {
+      const ctx = document.getElementById('day-chart');
+      const labels = days.map((d) => d.day.slice(5).split('-').reverse().join('/'));
+      if (state.chart) state.chart.destroy();
+      state.chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels.length ? labels : ['—'],
+          datasets: [
+            { label: 'Pedidos', data: days.map((d) => d.pedidos), backgroundColor: 'rgba(255,255,255,.16)', borderRadius: 8 },
+            { label: 'Faturamento (R$)', data: days.map((d) => Number(d.faturamento_cents || 0) / 100), backgroundColor: 'rgba(227,179,65,.85)', borderRadius: 8 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#9b958c' } } },
+          scales: {
+            x: { ticks: { color: '#9b958c' }, grid: { color: 'rgba(255,255,255,.04)' } },
+            y: { ticks: { color: '#9b958c' }, grid: { color: 'rgba(255,255,255,.04)' } }
+          }
+        }
+      });
+    }
+    function saleCard(order) {
+      const paid = isPaid(order);
+      const campaign = order.utm_campaign_name && order.utm_campaign
+        ? `${order.utm_campaign_name} · ${order.utm_campaign}`
+        : pretty(order.utm_campaign_name || order.utm_campaign, 'campanha não identificada');
+      return `
+        <article class="sale ${paid ? 'is-paid' : ''}">
+          <div class="sale-top">
+            <div>
+              <div class="name">${esc(pretty(order.nome, 'Cliente sem nome'))}</div>
+              <div class="meta">${esc(pretty(order.produto))} · ${esc(pretty(order.cargo, 'cargo não informado'))} · ${money(order.price_cents)}</div>
+              <div class="meta">${esc(pretty(order.cidade, 'cidade n/d'))}${order.uf ? '/' + esc(order.uf) : ''} · CPF ${esc(pretty(order.cpf))} · ${when(order.paid_at || order.created_at)}</div>
+            </div>
+            <div class="sale-actions">
+              <span class="status ${paid ? 'paid' : 'wait'}">${paid ? (order.marked_paid_by_admin ? 'Pago no painel' : 'Pago') : 'Aguardando PIX'}</span>
+              ${paid ? '' : `<button class="btn-pay" type="button" data-id="${esc(order.id || '')}" data-tx="${esc(order.transacao_id || '')}" data-cpf="${esc(order.cpf || '')}">Marcar como pago</button>`}
+            </div>
+          </div>
+          <div class="attr">
+            <div class="attr-box"><span>Palavra-chave</span><strong>${esc(keywordOf(order))}</strong><small>Match ${esc(matchLabel(order.utm_matchtype))}</small></div>
+            <div class="attr-box"><span>Campanha</span><strong>${esc(campaign)}</strong><small>Grupo ${esc(pretty(order.utm_adgroup, '—'))} · Criativo ${esc(pretty(order.utm_ad, '—'))}</small></div>
+            <div class="attr-box"><span>Canal</span><strong>${esc(pretty(order.utm_source))} · ${esc(pretty(order.utm_medium, '—'))}</strong><small>${esc(networkLabel(order.utm_network))} · ${esc(deviceLabel(order.utm_device))}</small></div>
+            <div class="attr-box"><span>Pedido</span><strong>${esc(pretty(order.email))}</strong><small>TX ${esc(pretty(order.transacao_id, 'sem transação'))}</small></div>
+          </div>
+        </article>
+      `;
+    }
+    function visibleOrders() {
+      const q = String(document.getElementById('search').value || '').toLowerCase().trim();
+      return ((state.data && state.data.orders) || []).filter((order) => {
+        const paid = isPaid(order);
+        if (state.status === 'paid' && !paid) return false;
+        if (state.status === 'waiting' && paid) return false;
+        if (!q) return true;
+        return [order.nome, order.cpf, order.email, order.cargo, order.produto, order.utm_keyword, order.utm_term, order.utm_campaign, order.utm_campaign_name, order.utm_source, order.cidade].join(' ').toLowerCase().includes(q);
+      });
+    }
+    function renderSales() {
+      const filtered = visibleOrders();
+      const root = document.getElementById('sales');
+      if (!filtered.length) {
+        root.innerHTML = '<div class="empty">Nenhum pedido neste filtro.</div>';
+        return;
+      }
+      root.innerHTML = filtered.map(saleCard).join('');
+    }
+    async function loadDashboard() {
+      const data = await api('dashboard', { range: state.range }, 'GET');
+      state.data = data;
+      setDriver(data);
+      renderKpis(data.kpis);
+      renderChart(data.by_day || []);
+      renderRows('by-source', data.by_source || [], (row) => pretty(row.label, 'sem origem'));
+      renderRows('by-keyword', data.by_keyword || [], (row) => pretty(row.label, 'sem palavra-chave'));
+      renderRows('by-campaign', data.by_campaign || [], (row) => row.campaign_name ? `${row.campaign_name} · ${row.label}` : pretty(row.label, 'sem campanha'));
+      renderRows('by-device', data.by_device || [], (row) => deviceLabel(row.label));
+      renderSales();
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const box = document.getElementById('login-error');
+      box.classList.add('hidden');
+      try {
+        await api('login', { user: document.getElementById('user').value.trim(), pass: document.getElementById('pass').value }, 'POST');
+        showApp(true);
+        await loadDashboard();
+      } catch (err) {
+        box.textContent = err.message;
+        box.classList.remove('hidden');
+      }
+    });
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      try { await api('logout', {}, 'POST'); } catch (e) {}
+      showApp(false);
+    });
+    document.getElementById('range-pills').addEventListener('click', async (event) => {
+      const btn = event.target.closest('[data-range]');
+      if (!btn) return;
+      state.range = btn.dataset.range;
+      document.querySelectorAll('#range-pills .pill').forEach((el) => el.classList.toggle('active', el === btn));
+      await loadDashboard();
+    });
+    document.getElementById('status-pills').addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-status]');
+      if (!btn) return;
+      state.status = btn.dataset.status;
+      document.querySelectorAll('#status-pills .pill').forEach((el) => el.classList.toggle('active', el === btn));
+      renderSales();
+    });
+    document.getElementById('search').addEventListener('input', renderSales);
+    document.getElementById('sales').addEventListener('click', async (event) => {
+      const btn = event.target.closest('.btn-pay');
+      if (!btn) return;
+      const id = btn.dataset.id || btn.dataset.tx || btn.dataset.cpf;
+      if (!id) { alert('Pedido sem identificador.'); return; }
+      if (!confirm('Marcar este pedido como pago e liberar o funil sem PIX?')) return;
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+      try {
+        const result = await api('mark_paid', { id, transacao_id: btn.dataset.tx || '', cpf: btn.dataset.cpf || '' }, 'POST');
+        if (state.data && Array.isArray(state.data.orders) && result.order) {
+          state.data.orders = state.data.orders.map((order) => (
+            order.id === result.order.id || order.transacao_id === result.order.transacao_id ? result.order : order
+          ));
+          if (state.data.kpis) {
+            state.data.kpis.pagos += 1;
+            state.data.kpis.aguardando = Math.max(0, (state.data.kpis.aguardando || 1) - 1);
+          }
+          renderKpis(state.data.kpis);
+          renderSales();
+        }
+        toast('Pedido marcado como pago');
+        await loadDashboard();
+      } catch (err) {
+        alert(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Marcar como pago';
+      }
+    });
+
+    (async function boot() {
+      try {
+        await api('me', null, 'GET');
+        showApp(true);
+        await loadDashboard();
+      } catch (e) {
+        showApp(false);
+      }
+    })();
+  </script>
+</body>
+</html>
